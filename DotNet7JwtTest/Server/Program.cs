@@ -3,10 +3,37 @@ var services = builder.Services;
 
 services
     .AddEndpointsApiExplorer()
-    .AddSwaggerGen();
+    .AddSwaggerGen(options =>
+    {
+        options.AddSecurityDefinition("Bearer",
+            new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme.",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+            });
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Id = "Bearer",
+                        Type = ReferenceType.SecurityScheme
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+    });
 
 services.AddControllersWithViews();
 services.AddRazorPages();
+
+services
+    .AddAuthentication()
+    .AddJwtBearer();
 
 var app = builder.Build();
 
@@ -28,6 +55,10 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// create your own JWT token using:
+// dotnet user-jwts create
+app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();

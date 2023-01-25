@@ -4,7 +4,7 @@ public static class Users
 {
     public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder apiRootBuilder)
     {
-        var usersGroupBuilder = apiRootBuilder.MapGroup("users");
+        var usersGroupBuilder = apiRootBuilder.MapGroup("users").RequireAuthorization();
 
         usersGroupBuilder.MapGet(string.Empty, GetUsersAsync);
         usersGroupBuilder.MapGet("/{userId:int}", GetUserAsync);
