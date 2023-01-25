@@ -8,6 +8,9 @@ public static class Users
 
         usersGroupBuilder.MapGet(string.Empty, GetUsersAsync);
         usersGroupBuilder.MapGet("/{userId:int}", GetUserAsync);
+        usersGroupBuilder.MapPost(string.Empty, CreateUserAsync);
+        usersGroupBuilder.MapPut("/{userId:int}", UpdateUserAsync);
+        usersGroupBuilder.MapDelete("/{userId:int}", DeleteUserAsync);
 
         return apiRootBuilder;
     }
@@ -31,5 +34,38 @@ public static class Users
         return user is null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private record User(int Id, string Name);
+    private static async Task<Ok<User>> CreateUserAsync(User user)
+    {
+        users.Add(user);
+        return TypedResults.Ok(user);
+    }
+
+    private static async Task<Results<Ok<User>, NotFound>> UpdateUserAsync(int userId, User user)
+    {
+        var foundUser = users.FirstOrDefault(user => user.Id == userId);
+        if (foundUser is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var index = users.IndexOf(foundUser);
+
+        foundUser = foundUser with { Name = user.Name };
+        users.Remove(foundUser);
+        users.Insert(index, user);
+
+        return TypedResults.Ok(foundUser);
+    }
+
+    private static async Task<Results<Ok, NotFound>> DeleteUserAsync(int userId)
+    {
+        var foundUser = users.FirstOrDefault(user => user.Id == userId);
+        if (foundUser is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        users.Remove(foundUser);
+        return TypedResults.Ok();
+    }
 }
